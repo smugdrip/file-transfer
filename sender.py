@@ -3,7 +3,7 @@ import tarfile
 import os
 import sys
 
-host = '192.168.0.2'  # IP of the receiver
+host = input('Enter receiver IP address (10.1.0.145): ')
 port = 5001
 
 if len(sys.argv) != 2:

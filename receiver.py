@@ -4,7 +4,7 @@ import os
 
 host = '0.0.0.0'
 port = 5001
-output_dir = 'received_files'
+output_dir = 'received-files'
 
 os.makedirs(output_dir, exist_ok=True)
 

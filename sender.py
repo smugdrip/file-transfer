@@ -3,14 +3,16 @@ import tarfile
 import os
 import sys
 
-host = input('Enter receiver IP address (10.1.0.145): ')
+host = input('enter receiver IP address (10.1.0.145): ')
+if not host:
+    host = '10.1.0.145'
 port = 5001
 
-if len(sys.argv) != 2:
-    print("Usage: python3 sender.py <directory_to_send>")
-    sys.exit(1)
+print('host, port: ', host, port)
 
-directory = sys.argv[1]
+directory = input('enter directory to send (./send-files): ')
+if not directory:
+    directory = './send-files'
 
 if not os.path.isdir(directory):
     print(f"Error: '{directory}' is not a valid directory.")

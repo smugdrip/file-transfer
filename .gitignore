@@ -1,2 +1,4 @@
 send-files/*
 received-files/*
+*.tar
+__pycache__/key.cpython-312.pyc

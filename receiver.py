@@ -3,7 +3,8 @@ import tarfile
 import os
 import time
 import key
-import cryptography as c
+from cryptography.fernet import Fernet
+from cryptography.fernet import InvalidToken
 import sys
 
 host = '0.0.0.0'
@@ -77,15 +78,22 @@ if total_received_bytes > 0 and os.path.exists(archive_path):
 
     try:
         fernet_key = key.get_fernet_key(pswd, salt)
-        fernet = c.Fernet(fernet_key)
+        fernet = Fernet(fernet_key)
+        chunk_size = 32000
 
         with open(encrypted_archive_path, 'rb') as encrypted_file:
-            encrypted_data = encrypted_file.read()
-
-        decrypted_data = fernet.decrypt(encrypted_data)
-
-        with open(decrypted_archive_path, 'wb') as decrypted_file:
-            decrypted_file.write(decrypted_data)
+            with open(decrypted_archive_path, 'wb') as decrypted_file:
+                while True:
+                    chunk = encrypted_file.read(chunk_size)
+                    if not chunk:
+                        break
+                    try:
+                        decrypted_chunk = fernet.decrypt(chunk)
+                        decrypted_file.write(decrypted_chunk)
+                    except InvalidToken:
+                        print("\nDecryption failed: Invalid password or corrupted data in a chunk.")
+                        os.remove(decrypted_archive_path)
+                        break 
 
         print(f"\nSuccessfully decrypted the received file to '{decrypted_archive_path}'")
 
@@ -98,7 +106,7 @@ if total_received_bytes > 0 and os.path.exists(archive_path):
             print(f"\nError extracting tar file: {e}. It might be corrupted or not a valid tar archive after decryption.")
         except FileNotFoundError:
             print(f"\nDecrypted archive file {decrypted_archive_path} not found for extraction.")
-    except c.InvalidToken:
+    except InvalidToken:
         print("\nDecryption failed: Invalid password or corrupted data.")
     except Exception as e:
         print(f"\nAn error occurred during decryption: {e}")

@@ -7,23 +7,27 @@ from cryptography.fernet import Fernet
 from cryptography.fernet import InvalidToken
 import sys
 
-host = '0.0.0.0'
-port = 5001
-output_dir = input('Enter directory name to store received files: ')
-alpha = 0.2
-
-os.makedirs(output_dir, exist_ok=True)
-
+# Statistics
+alpha = 0.1
 total_received_bytes = 0
 ewma_kbps = 0.0
 stat_report_interval_seconds = 1.0
 last_stat_report_time = time.time()
 total_bytes_at_last_report = 0
 first_ewma_value_set = False
-salt = bytes()
+
+# Networking
+host = '0.0.0.0'
+port = 5001
+
+# File management
+output_dir = input('Enter directory name to store received files: ')
+os.makedirs(output_dir, exist_ok=True)
 encrypted_archive_path = os.path.join(output_dir, 'received.encrypted')
 decrypted_archive_path = os.path.join(output_dir, 'received.tar')
 
+# Encryption
+salt = bytes()
 pswd = str(input('Enter password to decrypt with: '))
 if not pswd:
     sys.exit()
@@ -34,12 +38,14 @@ with socket.socket() as s:
     print(f"Listening on {host}:{port}...")
     conn, addr = s.accept()
     with conn:
+
         print(f"Connected by {addr}")
-        archive_path = os.path.join(output_dir, 'received.tar')
+        
         # get the salt first
         salt = conn.recv(16)
         print(f"Received salt: {salt.hex()}")
-        with open(archive_path, 'wb') as f:
+
+        with open(encrypted_archive_path, 'wb') as f:
             start_time = time.time()
             while True:
                 data = conn.recv(4096)
@@ -74,7 +80,7 @@ print(f"\nTotal {total_received_bytes} bytes received.")
 print(f"Final EWMA Transfer Rate: {ewma_kbps:.2f} Kbps.")
 
 # decrypt and extract
-if total_received_bytes > 0 and os.path.exists(archive_path):
+if total_received_bytes > 0 and os.path.exists(encrypted_archive_path):
 
     try:
         fernet_key = key.get_fernet_key(pswd, salt)
@@ -114,7 +120,7 @@ else:
     if total_received_bytes == 0:
         print("\nNo data received.")
     else: # os.path.exists(archive_path) is false, but total_received_bytes > 0 (highly unlikely)
-        print(f"\nArchive file {archive_path} was not created despite receiving data.")
+        print(f"\nArchive file {encrypted_archive_path} was not created despite receiving data.")
 
 
 print(f"\nTotal {total_received_bytes} bytes received.")

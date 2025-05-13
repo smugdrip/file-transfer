@@ -34,6 +34,8 @@ salt = os.urandom(16)
 fernet_key = key.get_fernet_key(pswd, salt)
 fernet = Fernet(fernet_key)
 
+print(f"salt: {salt.hex()}")
+
 # Send the tar file
 print('>>>sending file...')
 count = 0

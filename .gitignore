@@ -3,3 +3,4 @@ received-files/*
 *.tar
 __pycache__/key.cpython-312.pyc
 __pycache__/key.cpython-311.pyc
+send-files-2/*

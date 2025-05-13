@@ -45,7 +45,6 @@ with socket.socket() as s:
     s.sendall(salt)
     with open(tar_path, 'rb') as f:
         while (chunk := f.read(4096)):
-            print(count, end=' ')
             s.sendall(fernet.encrypt(chunk))
 
 os.remove(tar_path)
